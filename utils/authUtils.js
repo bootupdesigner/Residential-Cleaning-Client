@@ -7,5 +7,5 @@ export const getAuthHeaders = async () => {
     console.error("❌ No auth token found!");
     return {};
   }
-  return { Authorization: `Bearer ${token}` }; // ✅ Correct format
+  return { Authorization: `Bearer ${token}` }; 
 };

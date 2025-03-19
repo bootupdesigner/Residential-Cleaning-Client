@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Alert, Platform, View, Text, Button, SafeAreaView, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../hooks/useAuth";
-import { useFocusEffect } from "@react-navigation/native"; // ✅ Import useFocusEffect
+import { useFocusEffect } from "@react-navigation/native"; 
 import Header from "../components/Header";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
@@ -10,7 +10,7 @@ import { API_BASE_URL } from "../config";
 
 const UserProfile = () => {
   const router = useRouter();
-  const { user, refreshUser, handleLogout } = useAuth(); // ✅ Ensure refreshUser is available
+  const { user, refreshUser, handleLogout } = useAuth(); 
   const [isLoading, setIsLoading] = useState(false);
 
 

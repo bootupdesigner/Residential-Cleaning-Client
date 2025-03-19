@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import { useRouter } from "expo-router";
-import { Platform } from "react-native";
 import { API_BASE_URL } from "../config";
 
 // ✅ Create Auth Context
@@ -36,7 +35,6 @@ export const AuthProvider = ({ children }) => {
         handleLogout();
       }
     } catch (error) {
-      console.error("❌ Token Expired or Invalid:", error.response?.data || error.message);
       handleLogout();
     }
   };
@@ -46,7 +44,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = await SecureStore.getItemAsync("authToken");
       if (!token) {
-        console.log("❌ No auth token found.");
         return;
       }
 
@@ -56,10 +53,8 @@ export const AuthProvider = ({ children }) => {
 
       if (response.status === 200) {
         setUser(response.data);
-        console.log("✅ User data refreshed:", response.data);
       }
     } catch (error) {
-      console.error("❌ Error refreshing user data:", error.response?.data || error.message);
     }
   };
 
@@ -77,7 +72,6 @@ export const AuthProvider = ({ children }) => {
         console.log("✅ User logged in successfully:", response.data);
       }
     } catch (error) {
-      console.error("❌ Error during login:", error.message);
     }
   };
   

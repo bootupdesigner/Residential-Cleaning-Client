@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { useAuth } from "../hooks/useAuth"; // ✅ Import the custom hook
-
+import { useAuth } from "../hooks/useAuth"; 
 const Footer = () => {
   const router = useRouter();
-  const { isAuthenticated, handleLogout } = useAuth(); // ✅ Use global auth state
-
+  const { isAuthenticated, handleLogout } = useAuth(); 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(isAuthenticated ?? false); // ✅ Avoid undefined state
+    setIsLoggedIn(isAuthenticated ?? false); 
   }, [isAuthenticated]);
 
   return (
