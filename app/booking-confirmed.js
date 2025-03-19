@@ -11,6 +11,7 @@ import {
 import { FontAwesome, FontAwesome6, MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter,  } from "expo-router";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 
 // ✅ Import getAuthHeaders from utility file
@@ -23,11 +24,6 @@ const BookingConfirmed = () => {
 
   // ✅ Get selectedDate and selectedTime from URL parameters
   const { selectedDate, selectedTime } = useLocalSearchParams();
-
-  const API_BASE_URL =
-    Platform.OS === "android" || Platform.OS === "ios"
-      ? "http://10.0.0.191:5000"
-      : "http://localhost:5000";
 
   // ✅ Fetch User Data
   useEffect(() => {

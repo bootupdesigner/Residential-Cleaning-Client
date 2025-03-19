@@ -3,12 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import { useRouter } from "expo-router";
 import { Platform } from "react-native";
-
-// ✅ API Base URL
-const API_BASE_URL =
-  Platform.OS === "android" || Platform.OS === "ios"
-    ? "http://10.0.0.191:5000"
-    : "http://localhost:5000";
+import { API_BASE_URL } from "../config";
 
 // ✅ Create Auth Context
 const AuthContext = createContext();

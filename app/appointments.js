@@ -5,7 +5,7 @@ import axios from "axios";
 import Header from "../components/Header";
 import { useAuth } from "../hooks/useAuth";
 import { useRouter } from "expo-router";
-const API_BASE_URL = Platform.OS === "android" || "ios" ? "http://10.0.0.191:5000" : "http://localhost:5000";
+import { API_BASE_URL } from "../config";
 
 const Appointments = () => {
 const router=useRouter();

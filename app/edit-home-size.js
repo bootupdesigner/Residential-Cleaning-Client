@@ -6,10 +6,7 @@ import HomeSizeComponent from "../components/HomeSizeComponent";
 import { useAuth } from "../hooks/useAuth"; // ✅ Import useAuth
 import Header from "../components/Header";
 import * as SecureStore from "expo-secure-store"; // ✅ Import SecureStore
-
-const API_BASE_URL = Platform.OS === "android" || Platform.OS === "ios"
-  ? "http://10.0.0.191:5000"
-  : "http://localhost:5000";
+import { API_BASE_URL } from "../config";
 
 const EditHomeSize = () => {
   const router = useRouter();

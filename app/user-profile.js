@@ -6,16 +6,13 @@ import { useFocusEffect } from "@react-navigation/native"; // ✅ Import useFocu
 import Header from "../components/Header";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 const UserProfile = () => {
   const router = useRouter();
   const { user, refreshUser, handleLogout } = useAuth(); // ✅ Ensure refreshUser is available
   const [isLoading, setIsLoading] = useState(false);
 
-  const API_BASE_URL =
-    Platform.OS === "android" || Platform.OS === "ios"
-      ? "http://10.0.0.191:5000"
-      : "http://localhost:5000";
 
   // ✅ Check if refreshUser exists before calling it
   useFocusEffect(

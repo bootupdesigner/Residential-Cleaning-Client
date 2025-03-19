@@ -7,8 +7,8 @@ import axios from "axios";
 import { useAuth } from "../hooks/useAuth"; // ✅ Import useAuth
 import { useRouter } from "expo-router";
 import Header from "../components/Header";
+import { API_BASE_URL } from "../config";
 
-const API_BASE_URL = Platform.OS === "android" || "ios" ? "http://10.0.0.191:5000" : "http://localhost:5000";
 
 const SignUp = () => {
     const router = useRouter();
@@ -83,11 +83,31 @@ const SignUp = () => {
             checkAuthStatus(); // ✅ Ensure Footer updates
 
             console.log("✅ Auto-Login Successful");
-            Alert.alert("Success", "Account created successfully!");
+            setTimeout(() => {
+                Alert.alert("Success", "Account created successfully!");
+            }, 500);
 
-            router.push("/user-profile"); // ✅ Redirect to Profile
+            router.replace("/booking"); // ✅ Redirect to Profile
+
+            // ✅ Handle Specific Errors
+           
         } catch (error) {
             console.error("❌ Sign Up Error:", error.response?.data || error.message);
+    
+            if (error.response) {
+                const { status, data } = error.response;
+    
+                if (status === 400 && data.message.includes("ZIP code")) {
+                    Alert.alert("Service Unavailable", "We currently do not service this area.");
+                    return;
+                }
+    
+                if (status === 400) {
+                    Alert.alert("Registration Error", data.message);
+                    return;
+                }
+            }
+    
             Alert.alert("Error", "Account creation failed. Please try again.");
         }
     };
@@ -97,11 +117,10 @@ const SignUp = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View>
-                <Header back={true} home={true} title={'Sign UP'} />
+                <Header back={true} home={true} title={'Sign Up'} />
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                <Text style={styles.header}>Sign Up</Text>
 
                 <AddressComponent address={address} setAddress={setAddress} />
                 <HomeSizeComponent homeSize={homeSize} setHomeSize={setHomeSize} />

@@ -6,11 +6,8 @@ import ContactInfoComponent from "../components/ContactInfoComponent";
 import { useAuth } from "../hooks/useAuth";
 import Header from "../components/Header";
 import * as SecureStore from "expo-secure-store";
+import { API_BASE_URL } from "../config";
 
-const API_BASE_URL =
-    Platform.OS === "android" || Platform.OS === "ios"
-      ? "http://10.0.0.191:5000"
-      : "http://localhost:5000";
 
 const EditProfile = () => {
   const router = useRouter();

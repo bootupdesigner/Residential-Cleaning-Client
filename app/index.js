@@ -4,6 +4,7 @@ import * as SecureStore from "expo-secure-store";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Header from "../components/Header";
+import { API_BASE_URL } from "../config";
 
 
 export default function Index() {
@@ -11,12 +12,7 @@ export default function Index() {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null); // ✅ Store user data
 
-
-  const API_BASE_URL =
-  Platform.OS === "android" || Platform.OS === "ios"
-    ? "http://10.0.0.191:5000"
-    : "http://localhost:5000";
-
+  
   // ✅ Get Screen Width to Maintain 16:9 Aspect Ratio
   const screenWidth = Dimensions.get("window").width;
   const imageHeight = (screenWidth * 9) / 16; // ✅ Calculate 16:9 height

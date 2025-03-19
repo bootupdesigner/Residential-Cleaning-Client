@@ -8,6 +8,7 @@ import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import { getAuthHeaders } from "../utils/authUtils";
 import Header from "../components/Header";
+import { API_BASE_URL } from "../config";
 
 const Booking = () => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -23,8 +24,6 @@ const Booking = () => {
   const [ceilingFanCount, setCeilingFanCount] = useState(0);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  const API_BASE_URL = Platform.OS === "android" || "ios" ? "http://10.0.0.191:5000" : "http://localhost:5000";
 
   // ✅ Define add-ons list
   const addOnsList = [

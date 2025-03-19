@@ -5,8 +5,8 @@ import axios from "axios";
 import { useAuth } from "../hooks/useAuth"; // ✅ Import useAuth
 import { Platform } from "react-native";
 import Header from "../components/Header";
+import { API_BASE_URL } from "../config";
 
-const API_BASE_URL = Platform.OS === "android" || "ios" ? "http://10.0.0.191:5000" : "http://localhost:5000";
 
 const SignIn = () => {
   const router = useRouter();
