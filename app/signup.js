@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, SafeAreaView, ScrollView, StyleSheet, Alert, Platform } from "react-native";
+import { View, Button, SafeAreaView, ScrollView, StyleSheet, Alert } from "react-native";
 import AddressComponent from "../components/AddressComponent";
 import HomeSizeComponent from "../components/HomeSizeComponent";
 import ContactInfoComponent from "../components/ContactInfoComponent";
 import axios from "axios";
-import { useAuth } from "../hooks/useAuth"; // ✅ Import useAuth
+import { useAuth } from "../hooks/useAuth"; 
 import { useRouter } from "expo-router";
 import Header from "../components/Header";
 import { API_BASE_URL } from "../config";
@@ -12,7 +12,7 @@ import { API_BASE_URL } from "../config";
 
 const SignUp = () => {
     const router = useRouter();
-    const { user, login, checkAuthStatus } = useAuth(); // ✅ Use login & checkAuthStatus
+    const { user, login, checkAuthStatus } = useAuth(); 
 
     const [address, setAddress] = useState({
         street: "",
@@ -66,11 +66,9 @@ const SignUp = () => {
                 }
             };
 
-            console.log("🔹 Sign Up Payload:", payload);
 
-            const response = await axios.post(`${API_BASE_URL}/api/auth/signup`, payload);
+            await axios.post(`${API_BASE_URL}/api/auth/signup`, payload);
 
-            console.log("✅ Sign Up Successful:", response.data);
 
             // ✅ Auto-Login After Signup
             const loginResponse = await axios.post(`${API_BASE_URL}/api/auth/login`, {
@@ -82,18 +80,15 @@ const SignUp = () => {
             await login(token); // ✅ Use login() from useAuth
             checkAuthStatus(); // ✅ Ensure Footer updates
 
-            console.log("✅ Auto-Login Successful");
             setTimeout(() => {
                 Alert.alert("Success", "Account created successfully!");
-            }, 500);
+            }, 200);
 
             router.replace("/booking"); // ✅ Redirect to Profile
 
             // ✅ Handle Specific Errors
            
-        } catch (error) {
-            console.error("❌ Sign Up Error:", error.response?.data || error.message);
-    
+        } catch (error) {    
             if (error.response) {
                 const { status, data } = error.response;
     

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator, Platform } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import Header from "../components/Header";
@@ -15,7 +15,6 @@ const PreviousBookings = () => {
   const getAuthHeaders = async () => {
     const token = await SecureStore.getItemAsync("authToken");
     if (!token) {
-      console.error("❌ No auth token found!");
       return {};
     }
     return { Authorization: `Bearer ${token}` };
@@ -31,7 +30,7 @@ const PreviousBookings = () => {
       hours = "00";
     }
 
-    return `${hours}:${minutes}:00`; // ✅ Ensures proper `HH:mm:ss` format
+    return `${hours}:${minutes}:00`; 
   };
 
   const fetchPastBookings = async () => {
@@ -50,13 +49,12 @@ const PreviousBookings = () => {
           ...booking,
           dateTime: new Date(`${booking.date}T${convertTo24HourFormat(booking.time)}`),
         }))
-        .filter((booking) => booking.dateTime < today) // ✅ Only past appointments
-        .sort((a, b) => b.dateTime - a.dateTime); // ✅ Newest to oldest
+        .filter((booking) => booking.dateTime < today) 
+        .sort((a, b) => b.dateTime - a.dateTime); 
 
-      console.log("✅ Past Bookings:", sortedPastBookings);
       setPastBookings(sortedPastBookings);
     } catch (error) {
-      console.error("❌ Error fetching past bookings:", error.response?.data || error.message);
+      Alert.alert("Error", "Failed to fetch past bookings. Please try again.");
     } finally {
       setIsLoading(false);
     }

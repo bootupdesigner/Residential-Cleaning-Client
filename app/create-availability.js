@@ -33,17 +33,13 @@ const CreateAvailability = () => {
   }, [selectedDate]);
 
   const fetchAllAvailability = async () => {
-    try {
-      console.log("🔹 Fetching availability...");
-      
+    try {     
       const response = await axios.get(`${API_BASE_URL}/api/admin/get-availability`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
   
-      console.log("✅ Full API Response:", response.data); // ✅ Log API response
   
       if (!response.data || !response.data.availability) {
-        console.error("❌ No availability data received.");
         setExistingAvailability({});
         return;
       }
@@ -57,7 +53,6 @@ const CreateAvailability = () => {
       setExistingAvailability(availability);
       setAvailableDates(filteredDates);
     } catch (error) {
-      console.error("❌ Error fetching availability:", error.response?.data || error.message);
       Alert.alert("Error", error.response?.data?.message || "Failed to fetch availability.");
       setExistingAvailability({});
     }
@@ -94,10 +89,7 @@ const CreateAvailability = () => {
     const formattedDate = moment(selectedDate).format("YYYY-MM-DD");
   
     // ✅ Log Data Before Sending
-    console.log("🔹 Sending Data:", {
-      date: formattedDate,
-      times: selectedTimes.map(time => time.trim()),
-    });
+   
   
     const payload = {
       date: formattedDate, // ✅ Ensure this is a string and not an object
@@ -109,11 +101,9 @@ const CreateAvailability = () => {
         headers: { Authorization: `Bearer ${user.token}` },
       });
   
-      console.log("✅ Response from Server:", response.data);
       Alert.alert("Success", "Availability updated successfully!");
       fetchAllAvailability();
     } catch (error) {
-      console.error("❌ Error setting availability:", error.response?.data || error.message);
       Alert.alert("Error", error.response?.data?.message || "Failed to set availability. Please try again.");
     }
   };
@@ -129,7 +119,6 @@ const CreateAvailability = () => {
       fetchAllAvailability();
       setSelectedTimes([]);
     } catch (error) {
-      console.error("❌ Error deleting availability:", error.response?.data || error.message);
       Alert.alert("Error", "Failed to delete availability. Please try again.");
     }
   };

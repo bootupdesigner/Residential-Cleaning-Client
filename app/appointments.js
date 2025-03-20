@@ -17,7 +17,6 @@ const router=useRouter();
   const getAuthHeaders = async () => {
     const token = await SecureStore.getItemAsync("authToken");
     if (!token) {
-      console.error("❌ No auth token found!");
       return {};
     }
     return { Authorization: `Bearer ${token}` };
@@ -33,7 +32,7 @@ const router=useRouter();
       hours = "00";
     }
   
-    return `${hours}:${minutes}:00`; // ✅ Ensures proper `HH:mm:ss` format
+    return `${hours}:${minutes}:00`; 
   };
   
   const fetchBookings = async () => {
@@ -42,7 +41,6 @@ const router=useRouter();
   
     try {
       const response = await axios.get(`${API_BASE_URL}${endpoint}`, { headers });
-      console.log("✅ Bookings before sorting:", response.data);
   
       // ✅ Get today's date (without time)
       const today = new Date();
@@ -54,13 +52,11 @@ const router=useRouter();
           ...booking,
           dateTime: new Date(`${booking.date}T${convertTo24HourFormat(booking.time)}`),
         }))
-        .filter((booking) => booking.dateTime >= today) // ✅ Remove past appointments
+        .filter((booking) => booking.dateTime >= today) 
         .sort((a, b) => a.dateTime - b.dateTime);
   
-      console.log("✅ Sorted Bookings:", sortedBookings);
       setBookings(sortedBookings);
     } catch (error) {
-      console.error("❌ Error fetching bookings:", error.response?.data || error.message);
     } finally {
       setIsLoading(false);
     }
@@ -84,13 +80,11 @@ const router=useRouter();
           onPress: async () => {
             try {
               const response = await axios.delete(`${API_BASE_URL}/api/bookings/cancel/${bookingId}`, { headers });
-              console.log("✅ Booking Cancelled:", response.data);
 
               // Update UI after successful cancellation
               setBookings(prevBookings => prevBookings.filter(booking => booking._id !== bookingId));
               Alert.alert("Success", "Appointment has been canceled.");
             } catch (error) {
-              console.error("❌ Error canceling booking:", error.response?.data || error.message);
               Alert.alert("Error", "Cancellation failed. Please try again.");
             }
           }

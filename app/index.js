@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, ActivityIndicator, SafeAreaView, Dimensions, Image, Platform, ScrollView, StyleSheet } from "react-native";
+import { Text, View, TouchableOpacity, ActivityIndicator, SafeAreaView, Dimensions, Image,  ScrollView, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useState, useEffect } from "react";
@@ -22,26 +22,20 @@ export default function Index() {
     try {
       const token = await SecureStore.getItemAsync("authToken");
       if (!token) {
-        console.log("❌ No token found.");
         setUser(null);
         return;
       }
   
-      console.log("🔑 Using Token:", token);
   
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(`${API_BASE_URL}/api/users/profile`, { headers });
-  
-      console.log("✅ API Response:", response.data);
-  
+    
       if (response.status === 200 && response.data) {
         setUser(response.data);
       } else {
-        console.log("❌ Invalid response status:", response.status);
         setUser(null);
       }
     } catch (error) {
-      console.log("❌ Error fetching user data:", error.response?.data || error.message);
       setUser(null);
     }
   }; 
@@ -58,10 +52,8 @@ export default function Index() {
     const token = await SecureStore.getItemAsync("authToken");
 
     if (token) {
-      console.log("✅ User is logged in. Redirecting to Booking page.");
       router.push("/booking");
     } else {
-      console.log("❌ No token found. Redirecting to Sign In page.");
       router.push("/signin");
     }
 

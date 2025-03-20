@@ -1,9 +1,8 @@
 import React, { useState,useEffect } from "react";
-import { View, Text, TextInput, Button, Alert, ActivityIndicator, StyleSheet,SafeAreaView,ScrollView } from "react-native";
+import { View, TextInput, Button, Alert, ActivityIndicator, StyleSheet,SafeAreaView,ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import { useAuth } from "../hooks/useAuth"; // ✅ Import useAuth
-import { Platform } from "react-native";
 import Header from "../components/Header";
 import { API_BASE_URL } from "../config";
 
@@ -35,15 +34,13 @@ const SignIn = () => {
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
 
       if (response.data.token) {
-        await login(response.data.token); // ✅ Update global authentication state
-        console.log("✅ Logged in successfully.");
+        await login(response.data.token); 
 
-        router.push("/booking"); // ✅ Redirect to booking page
+        router.push("/booking");
       } else {
         Alert.alert("Login Failed", "Invalid response from server.");
       }
     } catch (error) {
-      console.error("❌ Login Error:", error.response?.data || error.message);
       Alert.alert("Login Failed", error.response?.data?.message || "An error occurred.");
     } finally {
       setIsLoading(false);

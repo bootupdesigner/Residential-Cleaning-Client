@@ -24,8 +24,6 @@ const UserProfile = () => {
   );
 
   const handleDeleteProfile = async () => {
-    console.log("🚀 Delete Profile button clicked!");
-
     Alert.alert(
       "Confirm Deletion",
       "Are you sure you want to delete your account? This action is irreversible.",
@@ -37,44 +35,31 @@ const UserProfile = () => {
           onPress: async () => {
             try {
               setIsLoading(true);
-
-              console.log("🔹 Fetching auth token...");
               const token = await SecureStore.getItemAsync("authToken");
 
               if (!token) {
-                console.error("❌ No auth token found!");
                 Alert.alert("Error", "Authentication failed. Please sign in again.");
                 return;
               }
 
-              console.log("✅ Token retrieved:", token);
               const headers = { Authorization: `Bearer ${token}` };
 
-              console.log("🔹 Sending DELETE request to API...");
-              const response = await axios.delete(`${API_BASE_URL}/api/users/profile`, { headers });
+              await axios.delete(`${API_BASE_URL}/api/users/profile`, { headers });
 
-              console.log("✅ Profile Deleted:", response.data);
               Alert.alert("Success", "Your profile has been deleted.");
 
               // ✅ Remove auth token
               await SecureStore.deleteItemAsync("authToken");
-              console.log("✅ Auth token removed.");
 
               // ✅ Check if handleLogout exists before calling it
-              console.log("🔹 handleLogout function:", handleLogout);
               if (typeof handleLogout === "function") {
                 await handleLogout();
-                console.log("✅ User logged out.");
-              } else {
-                console.error("❌ handleLogout is not a function!");
               }
 
               // ✅ Redirect to home
-              console.log("✅ Redirecting to home page...");
               router.replace("/");
 
             } catch (error) {
-              console.error("❌ Error deleting profile:", error.response?.data || error.message);
               Alert.alert("Error", error.response?.data?.message || "Failed to delete your profile. Please try again.");
             } finally {
               setIsLoading(false);

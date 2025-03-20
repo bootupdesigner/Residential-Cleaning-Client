@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, SafeAreaView, ScrollView, StyleSheet, Alert, ActivityIndicator, Platform } from "react-native";
+import { View, Text, Button, SafeAreaView, ScrollView, StyleSheet, Alert, ActivityIndicator,  } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import HomeSizeComponent from "../components/HomeSizeComponent";
@@ -48,14 +48,12 @@ const EditHomeSize = () => {
   
       const response = await axios.put(`${API_BASE_URL}/api/users/profile`, payload, { headers });
   
-      console.log("✅ Home Size Updated:", response.data);
       Alert.alert("Success", "Home size updated successfully!");
   
       await refreshUser();
       router.push("/user-profile");
   
     } catch (error) {
-      console.error("❌ Update Error:", error.response?.data || error.message);
       Alert.alert("Error", error.response?.data?.message || "Home size update failed. Please try again.");
     }
   };

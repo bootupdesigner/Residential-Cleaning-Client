@@ -61,7 +61,6 @@ const Booking = () => {
   
     // ✅ Ensure user is loaded before proceeding
     if (!user || !user.id) {
-      console.error("❌ User data is missing:", user);
       Alert.alert("Error", "User data is missing. Please log in again.");
       return;
     }
@@ -84,9 +83,7 @@ const Booking = () => {
       return;
     }
   
-    try {
-      console.log("🔹 Initiating Payment Request...");
-  
+    try {  
       const totalPrice = calculateTotalPrice();
   
       // ✅ Step 1: Request Payment Intent from Backend
@@ -102,7 +99,6 @@ const Booking = () => {
       );
   
       const { clientSecret, ephemeralKey, customer } = paymentResponse.data;
-      console.log("✅ Received Stripe Payment Data:", paymentResponse.data);
   
       // ✅ Step 2: Initialize the Stripe Payment Sheet
       const { error: initError } = await initPaymentSheet({
@@ -113,7 +109,6 @@ const Booking = () => {
       });
   
       if (initError) {
-        console.error("❌ Stripe Payment Sheet Initialization Error:", initError.message);
         Alert.alert("Payment failed", initError.message);
         return;
       }
@@ -122,16 +117,11 @@ const Booking = () => {
       const { error: paymentError } = await presentPaymentSheet();
   
       if (paymentError) {
-        console.error("❌ Stripe Payment Error:", paymentError.message);
         Alert.alert("Payment failed", paymentError.message);
         return;
       }
-  
-      console.log("✅ Payment Successful!");
-  
-      // ✅ Step 4: Confirm the Booking AFTER Payment
-      console.log("🔹 Initiating Booking Request...");
-  
+    
+      // ✅ Step 4: Confirm the Booking AFTER Payment  
       const bookingPayload = {
         selectedDate: formattedDate,
         selectedTime,
@@ -139,7 +129,6 @@ const Booking = () => {
         addOns: selectedAddOns,
       };
   
-      console.log("🔹 Booking Payload:", bookingPayload);
   
       const bookingResponse = await axios.post(
         `${API_BASE_URL}/api/bookings/book`,
@@ -147,7 +136,6 @@ const Booking = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
-      console.log("✅ Booking Successful:", bookingResponse.data);
       Alert.alert("Success", "Your booking has been confirmed!");
   
       // ✅ Refresh available times after successful booking
@@ -164,7 +152,6 @@ const Booking = () => {
       });
   
     } catch (error) {
-      console.error("❌ Booking or Payment Error:", error.response?.data || error.message);
       Alert.alert("Error", error.response?.data?.message || "An error occurred. Please try again.");
     }
   };
@@ -176,7 +163,6 @@ const Booking = () => {
       try {
         const headers = await getAuthHeaders();
         if (!headers.Authorization) {
-          console.error("❌ No auth token found. Redirecting to login...");
           router.push("/signin");
           return;
         }
@@ -184,14 +170,11 @@ const Booking = () => {
         const response = await axios.get(`${API_BASE_URL}/api/users/profile`, { headers });
 
         if (response.status === 200) {
-          console.log("✅ User Data:", response.data);
           setUser(response.data); // ✅ Store user object as-is
         } else {
-          console.error("❌ Error: Invalid response status:", response.status);
           setUser(null);
         }
       } catch (error) {
-        console.error("❌ Error fetching user data:", error.response?.data || error.message);
       } finally {
         setIsLoading(false);
       }
@@ -205,7 +188,6 @@ const Booking = () => {
     const fetchAllAvailability = async () => {
       const token = await SecureStore.getItemAsync("authToken");
       if (!token) {
-        console.error("❌ No auth token found. Cannot fetch availability.");
         return;
       }
 
@@ -214,13 +196,11 @@ const Booking = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("✅ Full API Response:", response.data);
 
         let availability = response.data.availability;
 
         // ✅ Ensure availability is an object
         if (!availability || typeof availability !== "object") {
-          console.error("❌ No availability data received.");
           setAvailableDates([]);
           return;
         }
@@ -233,7 +213,6 @@ const Booking = () => {
         setAllAvailability(availability);
         setAvailableDates(datesWithAvailability);
       } catch (error) {
-        console.error("❌ Error fetching availability:", error.response?.data || error.message);
         setAvailableDates([]);
       }
     };
@@ -257,7 +236,6 @@ const Booking = () => {
       });
   
       const updatedAvailability = response.data.availability;
-      console.log("✅ Updated Availability:", updatedAvailability);
   
       // ✅ Ensure only available times are shown
       setAllAvailability(updatedAvailability);
@@ -265,7 +243,6 @@ const Booking = () => {
         updatedAvailability[dateString]?.map(time => ({ label: time, value: time })) || []
       );
     } catch (error) {
-      console.error("❌ Error fetching updated availability:", error.response?.data || error.message);
     }
   };
   
@@ -293,7 +270,6 @@ const Booking = () => {
 
     // Format selected date
     const formattedDate = date.toISOString().split("T")[0];
-    console.log(`🔹 User selected date: ${formattedDate}`);
 
     // Check if the selected date has availability
     if (!availableDates.includes(formattedDate)) {
