@@ -8,7 +8,7 @@ import { useRouter } from "expo-router";
 import { API_BASE_URL } from "../config";
 
 const Appointments = () => {
-const router=useRouter();
+  const router = useRouter();
 
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
@@ -25,43 +25,43 @@ const router=useRouter();
   const convertTo24HourFormat = (time) => {
     const [timePart, period] = time.split(" ");
     let [hours, minutes] = timePart.split(":");
-  
+
     if (period === "PM" && hours !== "12") {
       hours = String(parseInt(hours, 10) + 12);
     } else if (period === "AM" && hours === "12") {
       hours = "00";
     }
-  
-    return `${hours}:${minutes}:00`; 
+
+    return `${hours}:${minutes}:00`;
   };
-  
+
   const fetchBookings = async () => {
     const headers = await getAuthHeaders();
     const endpoint = user.role === "admin" ? "/api/bookings/all" : "/api/bookings/user-bookings";
-  
+
     try {
       const response = await axios.get(`${API_BASE_URL}${endpoint}`, { headers });
-  
+
       // ✅ Get today's date (without time)
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-  
+
       // ✅ Convert date & time into valid `Date` objects
       const sortedBookings = response.data.bookings
         .map((booking) => ({
           ...booking,
           dateTime: new Date(`${booking.date}T${convertTo24HourFormat(booking.time)}`),
         }))
-        .filter((booking) => booking.dateTime >= today) 
+        .filter((booking) => booking.dateTime >= today)
         .sort((a, b) => a.dateTime - b.dateTime);
-  
+
       setBookings(sortedBookings);
     } catch (error) {
     } finally {
       setIsLoading(false);
     }
   };
-  
+
 
   const handleCancelBooking = async (bookingId) => {
     const headers = await getAuthHeaders();
@@ -113,16 +113,17 @@ const router=useRouter();
         ) : (
           bookings.map((booking, index) => (
             <View key={index} style={styles.appointmentCard}>
-              <Text style={styles.date}>{new Date(booking.date).toDateString()}</Text>
+              <Text style={styles.date}>{new Date(`${booking.date}T00:00:00`).toDateString()}</Text>
               <Text style={styles.time}>⏰ Time: {booking.time}</Text>
               <Text style={styles.address}>📍 {booking.serviceAddress}, {booking.city}, {booking.state} {booking.zipCode}</Text>
 
               {/* ✅ Check if booking.user exists before accessing properties */}
-              {booking.user ? (
-                <Text style={styles.user}>👤 {booking.user.firstName} {booking.user.lastName} ({booking.user.email})</Text>
-              ) : (
-                <Text style={styles.user}>👤 Unknown User</Text>
-              )}
+              {booking.userId ? (
+  <Text style={styles.user}>👤 {booking.userId.firstName} {booking.userId.lastName} ({booking.userId.email})</Text>
+) : (
+  <Text style={styles.user}>👤 Unknown User</Text>
+)}
+
 
               <TouchableOpacity
                 onPress={() => handleCancelBooking(booking._id)}

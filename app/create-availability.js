@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, SafeAreaView, ScrollView, StyleSheet, Alert, Platform, TouchableOpacity } from "react-native";
+import { View, Text, Button, SafeAreaView, ScrollView, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 import { useAuth } from "../hooks/useAuth";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from "moment";
 import Header from "../components/Header";
 import { API_BASE_URL } from "../config";
-
 
 const CreateAvailability = () => {
   const router = useRouter();
@@ -32,24 +32,29 @@ const CreateAvailability = () => {
     }
   }, [selectedDate]);
 
+  const getAuthHeaders = async () => {
+    const token = await SecureStore.getItemAsync("authToken");
+    if (!token) {
+      Alert.alert("Error", "Authentication error. Please sign in again.");
+      router.replace("/signin");
+      return null;
+    }
+    return { Authorization: `Bearer ${token}` };
+  };
+
   const fetchAllAvailability = async () => {
-    try {     
-      const response = await axios.get(`${API_BASE_URL}/api/admin/get-availability`, {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-  
-  
-      if (!response.data || !response.data.availability) {
-        setExistingAvailability({});
-        return;
-      }
-  
-      const availability = response.data.availability;
+    const headers = await getAuthHeaders();
+    if (!headers) return;
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/admin/get-availability`, { headers });
+
+      const availability = response.data.availability || {};
       const today = moment().format("YYYY-MM-DD");
       const filteredDates = Object.keys(availability)
         .filter(date => date >= today)
         .sort();
-  
+
       setExistingAvailability(availability);
       setAvailableDates(filteredDates);
     } catch (error) {
@@ -57,18 +62,15 @@ const CreateAvailability = () => {
       setExistingAvailability({});
     }
   };
-  
 
-  const fetchAvailabilityForDate = async () => {
+  const fetchAvailabilityForDate = () => {
     const formattedDate = moment(selectedDate).format("YYYY-MM-DD");
     setSelectedTimes(existingAvailability[formattedDate] || []);
   };
 
   const toggleTimeSelection = (time) => {
-    setSelectedTimes((prevTimes) =>
-      prevTimes.includes(time)
-        ? prevTimes.filter((t) => t !== time)
-        : [...prevTimes, time]
+    setSelectedTimes(prev =>
+      prev.includes(time) ? prev.filter(t => t !== time) : [...prev, time]
     );
   };
 
@@ -84,49 +86,47 @@ const CreateAvailability = () => {
       Alert.alert("Error", "Please select at least one time.");
       return;
     }
-  
-    // ✅ Ensure selectedDate is formatted properly
-    const formattedDate = moment(selectedDate).format("YYYY-MM-DD");
-  
-    // ✅ Log Data Before Sending
-   
-  
+
+    const headers = await getAuthHeaders();
+    if (!headers) return;
+
     const payload = {
-      date: formattedDate, // ✅ Ensure this is a string and not an object
-      times: selectedTimes.map(time => time.trim()), // ✅ Ensure times are strings
+      date: moment(selectedDate).format("YYYY-MM-DD"),
+      times: selectedTimes.map(t => t.trim()),
     };
-  
+
     try {
-      const response = await axios.put(`${API_BASE_URL}/api/admin/update-availability`, payload, {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-  
+      await axios.put(`${API_BASE_URL}/api/admin/update-availability`, payload, { headers });
       Alert.alert("Success", "Availability updated successfully!");
       fetchAllAvailability();
     } catch (error) {
-      Alert.alert("Error", error.response?.data?.message || "Failed to set availability. Please try again.");
+      Alert.alert("Error", error.response?.data?.message || "Failed to update availability.");
     }
   };
-  
+
   const deleteAvailability = async () => {
+    const headers = await getAuthHeaders();
+    if (!headers) return;
+
     const formattedDate = moment(selectedDate).format("YYYY-MM-DD");
+
     try {
       await axios.delete(`${API_BASE_URL}/api/admin/delete-availability`, {
-        headers: { Authorization: `Bearer ${user.token}` },
+        headers,
         data: { date: formattedDate },
       });
       Alert.alert("Success", "Availability deleted successfully!");
       fetchAllAvailability();
       setSelectedTimes([]);
     } catch (error) {
-      Alert.alert("Error", "Failed to delete availability. Please try again.");
+      Alert.alert("Error", error.response?.data?.message || "Failed to delete availability.");
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View>
-        <Header back={true} home={true} title={'Manage Availability'} />
+        <Header back={true} home={true} title="Manage Availability" />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -134,7 +134,9 @@ const CreateAvailability = () => {
         <View style={styles.inlineRow}>
           {availableDates.length > 0 ? (
             availableDates.map((date) => (
-              <Text key={date} style={styles.dateItem}>📅 {moment(date).format("ddd, MMM D")}</Text>
+              <Text key={date} style={styles.dateItem}>
+                📅 {moment(date).format("ddd, MMM D")}
+              </Text>
             ))
           ) : (
             <Text>No availability set.</Text>
@@ -143,9 +145,16 @@ const CreateAvailability = () => {
 
         <Button title="Select Date" onPress={() => setShowDatePicker(true)} />
         {showDatePicker && (
-          <DateTimePicker value={selectedDate} mode="date" display="default" onChange={handleDateChange} />
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+          />
         )}
-        <Text style={styles.selectedDate}>Selected Date: {selectedDate.toDateString()}</Text>
+        <Text style={styles.selectedDate}>
+          Selected Date: {selectedDate.toDateString()}
+        </Text>
 
         <Text style={styles.label}>Select Times:</Text>
         {availableTimes.map((time) => (
@@ -157,6 +166,7 @@ const CreateAvailability = () => {
         ))}
 
         <Button title="Update Availability" onPress={submitAvailability} color="green" />
+
         <TouchableOpacity onPress={deleteAvailability} style={styles.deleteButton}>
           <Text style={styles.deleteText}>Delete Availability for Selected Date</Text>
         </TouchableOpacity>
@@ -179,7 +189,6 @@ const styles = StyleSheet.create({
   dateItem: { marginRight: 10, fontSize: 16 },
   deleteButton: { backgroundColor: "red", padding: 10, borderRadius: 5, marginTop: 20 },
   deleteText: { color: "white", textAlign: "center", fontSize: 16 },
-
 });
 
 export default CreateAvailability;

@@ -13,7 +13,7 @@ export default {
       },
     scheme: "jmac-cleaning-services",
     splash: {
-      image: "./assets/splash.png",
+      image: "./assets/images/splash.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff"
     },

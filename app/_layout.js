@@ -1,11 +1,21 @@
 import React from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import Constants from "expo-constants";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Slot } from 'expo-router';
 import Footer from "../components/Footer";
-import { AuthProvider, useAuth } from "../hooks/useAuth"; // ✅ Import AuthProvider and useAuth
+import { AuthProvider } from "../hooks/useAuth";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+
+function FooterWithSafeArea() {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={{ paddingBottom: insets.bottom, backgroundColor: "white" }}>
+      <Footer />
+    </View>
+  );
+}
 
 export default function RootLayout() {
   const publishableKey = Constants.expoConfig.extra.stripePublishableKey;
@@ -17,18 +27,21 @@ export default function RootLayout() {
       </View>
     );
   }
-  
+  const insets = useSafeAreaInsets();
+
   return (
-    <AuthProvider> 
-      <StripeProvider
-        publishableKey={publishableKey}
-        merchantIdentifier="merchant.com.bootupdesigner.jmaccleaningservices"
-      >
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Slot />
-          <Footer />
-        </GestureHandlerRootView>
-      </StripeProvider>
+    <AuthProvider>
+      <SafeAreaProvider>
+        <StripeProvider
+          publishableKey={publishableKey}
+          merchantIdentifier="merchant.com.bootupdesigner.jmaccleaningservices"
+        >
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Slot />
+            <FooterWithSafeArea />
+          </GestureHandlerRootView>
+        </StripeProvider>
+      </SafeAreaProvider>
     </AuthProvider>
   );
 }

@@ -54,43 +54,51 @@ const Booking = () => {
   };
 
   const confirmBookingWithPayment = async () => {
+    console.log("✅ Confirm Booking pressed");
+  
     if (!selectedDate || !selectedTime) {
+      console.warn("❌ Missing date or time:", { selectedDate, selectedTime });
       Alert.alert("Error", "Please select a date and time.");
       return;
     }
   
-    // ✅ Ensure user is loaded before proceeding
     if (!user || !user.id) {
+      console.warn("❌ User missing or not loaded");
       Alert.alert("Error", "User data is missing. Please log in again.");
       return;
     }
   
-    const userId = user.id; // ✅ Ensure userId is included in the request
+    const userId = user.id;
+    console.log("👤 User ID:", userId);
   
-    // ✅ Re-fetch availability to ensure time is still available
+    // Fetch latest availability for this date
+    console.log("📅 Checking availability for date:", selectedDate);
     await fetchAvailableTimes(selectedDate);
   
     if (!availableTimes.some(timeObj => timeObj.value === selectedTime)) {
-      Alert.alert("Error", "Selected time is no longer available. Please choose another time.");
+      console.warn("❌ Time no longer available");
+      Alert.alert("Error", "Selected time is no longer available.");
       return;
     }
   
-    const formattedDate = selectedDate.toISOString().split("T")[0];
+    const formattedDate = selectedDate; // already in YYYY-MM-DD format from dropdown
     const token = await SecureStore.getItemAsync("authToken");
-  
     if (!token) {
-      Alert.alert("Error", "No authentication token found. Please sign in again.");
+      console.warn("❌ No token found");
+      Alert.alert("Error", "Please sign in again.");
       return;
     }
   
-    try {  
+    try {
       const totalPrice = calculateTotalPrice();
+      console.log("💰 Total Price:", totalPrice);
   
-      // ✅ Step 1: Request Payment Intent from Backend
+      // Step 1: Create Payment Intent
+      console.log("🚀 Requesting payment intent...");
       const paymentResponse = await axios.post(
         `${API_BASE_URL}/api/payment/pay`,
         {
-          userId, // ✅ Ensure `userId` is included
+          userId,
           selectedAddOns,
           ceilingFanCount,
           totalPrice,
@@ -98,9 +106,12 @@ const Booking = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
+      console.log("✅ Payment Intent Response:", paymentResponse.data);
+  
       const { clientSecret, ephemeralKey, customer } = paymentResponse.data;
   
-      // ✅ Step 2: Initialize the Stripe Payment Sheet
+      // Step 2: Init Stripe Payment Sheet
+      console.log("📦 Initializing Stripe Sheet...");
       const { error: initError } = await initPaymentSheet({
         paymentIntentClientSecret: clientSecret,
         customerEphemeralKeySecret: ephemeralKey,
@@ -109,39 +120,40 @@ const Booking = () => {
       });
   
       if (initError) {
+        console.error("❌ Stripe Init Error:", initError);
         Alert.alert("Payment failed", initError.message);
         return;
       }
   
-      // ✅ Step 3: Present the Stripe Payment Sheet
+      // Step 3: Present Payment Sheet
+      console.log("💳 Presenting Payment Sheet...");
       const { error: paymentError } = await presentPaymentSheet();
   
       if (paymentError) {
+        console.error("❌ Payment Sheet Error:", paymentError);
         Alert.alert("Payment failed", paymentError.message);
         return;
       }
-    
-      // ✅ Step 4: Confirm the Booking AFTER Payment  
-      const bookingPayload = {
-        selectedDate: formattedDate,
-        selectedTime,
-        userId, // ✅ Ensure `userId` is correctly passed
-        addOns: selectedAddOns,
-      };
   
-  
+      // Step 4: Confirm Booking
+      console.log("📅 Booking appointment...");
       const bookingResponse = await axios.post(
         `${API_BASE_URL}/api/bookings/book`,
-        bookingPayload,
+        {
+          selectedDate: formattedDate,
+          selectedTime,
+          userId,
+          addOns: selectedAddOns,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
+      console.log("✅ Booking Successful:", bookingResponse.data);
+  
       Alert.alert("Success", "Your booking has been confirmed!");
   
-      // ✅ Refresh available times after successful booking
       fetchAvailableTimes(selectedDate);
   
-      // Redirect to booking confirmed screen
       router.push({
         pathname: "/booking-confirmed",
         params: {
@@ -152,11 +164,12 @@ const Booking = () => {
       });
   
     } catch (error) {
+      console.error("❌ Booking or Payment Error:", error.response?.data || error.message);
       Alert.alert("Error", error.response?.data?.message || "An error occurred. Please try again.");
     }
   };
   
-  
+
   // **Fetch User Profile**
   useEffect(() => {
     const loadUserData = async () => {
@@ -205,10 +218,17 @@ const Booking = () => {
           return;
         }
 
-        // ✅ Ensure availability contains valid dates
-        const datesWithAvailability = Object.keys(availability).filter(
-          (date) => Array.isArray(availability[date]) && availability[date].length > 0
-        );
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const datesWithAvailability = Object.keys(availability).filter((date) => {
+          const dateObj = new Date(date + "T00:00:00");
+          return (
+            Array.isArray(availability[date]) &&
+            availability[date].length > 0 &&
+            dateObj >= today
+          );
+        });        
 
         setAllAvailability(availability);
         setAvailableDates(datesWithAvailability);
@@ -227,16 +247,16 @@ const Booking = () => {
       setAvailableTimes([]);
       return;
     }
-  
+
     // ✅ Fetch availability from backend
     try {
       const token = await SecureStore.getItemAsync("authToken");
       const response = await axios.get(`${API_BASE_URL}/api/admin/get-availability`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
+
       const updatedAvailability = response.data.availability;
-  
+
       // ✅ Ensure only available times are shown
       setAllAvailability(updatedAvailability);
       setAvailableTimes(
@@ -245,7 +265,7 @@ const Booking = () => {
     } catch (error) {
     }
   };
-  
+
 
 
   // Clear selected time when the date changes
@@ -303,21 +323,31 @@ const Booking = () => {
             <Text>💰 Base Price: ${user.cleaningPrice || 0}</Text>
           </>
         )}
-
         <Text style={{ color: 'orange', fontSize: 18.72, fontWeight: "bold", marginTop: 15 }}>📅 Select a Date:</Text>
-        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{ marginVertical: 10, padding: 15, backgroundColor: "#ddd", borderRadius: 5 }}>
-          <Text>{selectedDate ? new Date(selectedDate).toDateString() : "Select a Date"}</Text>
-        </TouchableOpacity>
-
-        {showDatePicker && (
-          <DateTimePicker
-            value={selectedDate || new Date()}
-            mode="date"
-            onChange={handleDateChange}
-            minimumDate={new Date()}
-            display="default"
+        <View style={{ marginVertical: 10 }}>
+          <Dropdown
+            data={availableDates.map((date) => ({
+              label: new Date(date + "T00:00:00").toDateString(),
+              value: date,
+            }))}
+            labelField="label"
+            valueField="value"
+            placeholder="Select a Date"
+            value={selectedDate}
+            onChange={(item) => {
+              setSelectedDate(item.value);
+              fetchAvailableTimes(item.value);
+            }}
+            style={{
+              borderWidth: 1,
+              borderColor: "#ccc",
+              padding: 10,
+              borderRadius: 5,
+            }}
+            disable={availableDates.length === 0}
           />
-        )}
+        </View>
+
 
         <Text style={{ color: 'orange', fontSize: 18.72, fontWeight: "bold", marginTop: 15 }}>⏰ Select a Time:</Text>
         <View style={{ marginVertical: 10 }}>
@@ -359,7 +389,7 @@ const Booking = () => {
 
         {selectedDate && selectedTime && (
           <View style={{ marginVertical: 20, padding: 15, backgroundColor: "#f0f0f0", borderRadius: 5 }}>
-            <Text style={{ fontSize: 16 }}>📅 Date: {selectedDate.toDateString()}</Text>
+            <Text style={{ fontSize: 16 }}>📅 Date: {new Date(selectedDate + "T00:00:00").toDateString()}</Text>
             <Text style={{ fontSize: 16 }}>⏰ Time: {selectedTime}</Text>
           </View>
         )}
